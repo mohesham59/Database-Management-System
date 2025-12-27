@@ -10,11 +10,11 @@ function DropTb {
 		echo "Error: Invalid Table Name, Contain Only Letters, Numbers, and Underscores."
 
 	elif [[ -f "$DropName" ]]; then
-		rm -rf "$DropName"
+		rm -rf "$DropName" "$DropName".metadata
 		echo "Table "$DropName" successfuly Deleted."
 
 	else
-		echo "Warning: The Table you Entered is Not Available."
+		echo "Error: The Table "$DropName" Does not Exist."
 
 	fi
 echo "======================================================"
