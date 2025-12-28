@@ -7,25 +7,25 @@ validate_db_name() {
     table from where join user database
   )
 
-  # Check if name is empty
+
   if [[ -z "$dbname" ]]; then
     echo "Invalid: name cannot be empty."
     return 1
   fi
 
-  # Check length
+ 
   if (( ${#dbname} > 64 )); then
     echo "Invalid: name is longer than 64 characters."
     return 1
   fi
 
-  # Check if starts with a letter
+
   if [[ ! $dbname =~ ^[a-zA-Z] ]]; then
     echo "Invalid: name must start with a letter (a-z or A-Z)."
     return 1
   fi
 
-  # Check valid characters
+
   if [[ ! $dbname =~ ^[a-zA-Z0-9_]+$ ]]; then
     echo "Invalid: name can only contain letters, digits, and underscores."
     return 1
