@@ -4,13 +4,16 @@ function DropTb {
 	
 	read -p "Enter The Table Name to Drop it: " DropName
 	
-   if [[ ! -f "$HOME/DBMS/DataBase/$db_name/$DropName" ]]; then
-     echo "Error: The Table "$DropName" Does not Exist."
-	   
-	eles
-	    cd "$HOME/DBMS/DataBase/$db_name"
-		rm -rf "$DropName" "$DropName".metadata
-		echo "Table "$DropName" successfuly Deleted."
-	fi
-echo "======================================================"
+	if [[ ! "$DropName" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+		echo "Error: Invalid Table Name."
+		return
+    	fi
+
+	if [[ -f "tables/$DropName" ]]; then
+		rm -f "tables/$DropName"
+		rm -f "metadata/$DropName.metadata"
+		echo "Table '$DropName' successfully deleted."
+	else
+		echo "Warning: Table '$DropName' does not exist."
+  fi
 }

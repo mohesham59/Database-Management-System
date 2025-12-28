@@ -18,13 +18,13 @@ function CreateTb {
 		elif [[ ! "$TableName" =~ ^[a-zA-Z_0-9]+$ ]]; then
 			echo "Error: Invalid Table Name, Contain Only Letters, Numbers, and Underscores."
 		
-		elif [[ -f "$HOME/DBMS/DataBase/$db_name/$TableName" ]]; then
+		elif [[ -f "tables/$TableName" ]]; then
 			echo -e "Warning: The Table "$TableName" Already Exists."
 			echo "Try to Enter Table Name Again."	
 		
 		else
-			touch "$HOME/DBMS/DataBase/$db_name/$TableName"
-			touch "$HOME/DBMS/DataBase/$db_name/$TableName".metadata
+			touch "tables/$TableName"
+			touch "metadata/$TableName.metadata"
 			echo "Table "$TableName" successfuly Created"
 			break
 		fi
@@ -101,7 +101,7 @@ function CreateTb {
 				echo "Error: Invalid Input for Primary Key, Must be Yes or No"
 			fi
 		done
-echo -e "\"Column Name\": $ColumnName\n\"Column Type\": $ColumnType\n\"Primary Key\": $ColumnPk\n---------" >> "$HOME/DBMS/DataBase/$db_name/$TableName.metadata"
+		echo -e "\"Table Name\": $TableName\n\"Number of Columns\": ${#Columns[@]}\n\"Column Name\": $ColumnName\n\"Column Type\": $ColumnType\n\"Primary Key\": $ColumnPk\n---------" >> "metadata/$TableName.metadata"
 	echo "======================================================"
 	done
 
