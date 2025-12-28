@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #============== source partion =============== 
-source ./List_function.sh
+source "$PROJECT_ROOT/DatabaseScripts/lib/validation.sh"
 
 Drop_func(){
     
