@@ -10,48 +10,63 @@ It uses the filesystem for storage, where each database is a folder, each table 
 ```text
 bash-dbms/
 │
-├─ README.md                  # Documentation & instructions
+├─ README.md
 ├─ LICENSE
 ├─ .gitignore
 │
-├─ storage/                   # 🔹 Storage Layer
-│   ├─ databases/             # Each DB is a folder
+├─ storage/                     # 🔹 Persistent Data Layer
+│   ├─ databases/
 │   │   └─ <db_name>/
-│   │       ├─ tables/        # Each table as a CSV file
+│   │       ├─ tables/
 │   │       │   └─ <table_name>.csv
-│   │       └─ metadata/      # Table metadata
-│   │           ├─ <table_name>_columns.meta
-│   │           ├─ <table_name>_types.meta
-│   │           └─ <table_name>_pk.meta
-│   └─ db_list.meta           # List of existing databases
-│
-├─ DatabaseScripts/           # 🔹 Database Logic
-│   ├─ Create_DB.sh
-│   ├─ Drop_DB.sh
-│   ├─ List_DB.sh
-│   ├─ Rename_DB.sh
-│   └─ DB_Menu.sh             # Calls the above functions
-│
-├─ TableScripts/              # 🔹 Table & Data Logic + Interface
-│
-│   ├─ GUI_Scripts/           # Zenity GUI forms & windows
-│   │   ├─ Table_Header.sh
-│   │   ├─ create_Table.sh
-│   │   ├─ drop_Table.sh
-│   │   ├─ insert_into_Table.sh
-│   │   ├─ delete_from_table.sh
-│   │   ├─ update_Table.sh
-│   │   ├─ select_from_Table.sh
-│   │   ├─ list_Tables.sh
-│   │   └─ table_Operations.sh   # Orchestrates GUI actions
+│   │       └─ metadata/
+│   │           ├─ <table_name>.columns
+│   │           ├─ <table_name>.types
+│   │           └─ <table_name>.pk
 │   │
-│   ├─ SQL_Scripts/           # SQL input handlers (calls same logic)
-│   │   ├─ SQLDeleteFromTable.sh
-│   │   ├─ SQLDropTable.sh
-│   │   ├─ SQLInsertIntoTable.sh
-│   │   ├─ SQLUpdateTable.sh
-│   │   └─ SQLSelectFromTable.sh
-│   │
-│   └─ Table_Menu.sh          # CLI table menu (optional)
+│   └─ db_list.meta
 │
+├─ lib/                         # 🔹 Core Logic (NO UI)
+│   ├─ db/
+│   │   ├─ create_db.sh
+│   │   ├─ drop_db.sh
+│   │   ├─ list_db.sh
+│   │   └─ rename_db.sh
+│   │
+│   ├─ table/
+│   │   ├─ create_table.sh
+│   │   ├─ drop_table.sh
+│   │   ├─ insert.sh
+│   │   ├─ delete.sh
+│   │   ├─ update.sh
+│   │   └─ select.sh
+│   │
+│   └─ utils.sh                # validation, logging, helpers
+│
+├─ cli/                         # 🔹 CLI Interface
+│   ├─ db_menu.sh
+│   └─ table_menu.sh
+│
+├─ gui/                         # 🔹 Zenity Interface
+│   ├─ db/
+│   │   ├─ create_db_gui.sh
+│   │   ├─ drop_db_gui.sh
+│   │   └─ list_db_gui.sh
+│   │
+│   └─ table/
+│       ├─ create_table_gui.sh
+│       ├─ drop_table_gui.sh
+│       ├─ insert_gui.sh
+│       ├─ delete_gui.sh
+│       ├─ update_gui.sh
+│       └─ select_gui.sh
+│
+├─ sql/                         # 🔹 SQL-like Interface
+│   ├─ sql_parser.sh
+│   ├─ sql_insert.sh
+│   ├─ sql_delete.sh
+│   ├─ sql_update.sh
+│   └─ sql_select.sh
+│
+└─ main.sh                      # 🔹 Entry point
 

@@ -1,48 +1,53 @@
 #!/bin/bash
 
+source "$(dirname "$0")/lib/CreateTable.sh"
+source "$(dirname "$0")/lib/ListTable.sh"
+source "$(dirname "$0")/lib/DropTable.sh"
 #-------------------------------------
 #---- Display Table Menu ----
 #-------------------------------------
+PS3="Please enter your choice [1-8]: "
 
-while true
+select var in "Create Table" "List Tables" "Drop Table" "Insert into Table" "Select From Table" "Delete From Table" "Update Table" "Exit"; 
 do
-    var=$(zenity --list \
-        --width=420 \
-        --height=380 \
-        --title="Table Menu" \
-        --text="Choose an Option From the List" \
-        --column="Options" \
-        "Create Table" \
-        "List Tables" \
-        "Drop Table" \
-        "Insert into Table" \
-        "Select From Table" \
-        "Delete From Table" \
-        "Update Table" \
-        "Exit")
 
-# Check if the previous command (zenity) failed or was canceled
-# $? : exit status of the last executed command
-# $? = 0  → success or user selected option
-# $? ≠ 0 → cancel or failed
-# -ne 0 : means the command did NOT exit successfully
-# -z "$var" : checks if the variable is empty (no option selected)	
-    if [[ $? -ne 0 || -z "$var" ]]; then
-        zenity --info --text="Operation canceled by user"
-        exit
+echo "======================================================"
+
+    # Check if input is empty or invalid
+    if [[ -z "$var" ]]; then
+        echo "Invalid option. Please try again."
+        continue
     fi
-
+    
     case "$var" in
-        "Create Table") CreateTb ;;
-        "List Tables") ListTb ;;
-        "Drop Table") DropTb ;;
-        "Insert into Table") InsertTb ;;
-        "Select From Table") SelectTb ;;
-        "Delete From Table") DeleteFromTb ;;
-        "Update Table") UpdateTb ;;
-        "Exit") exit ;;
+        "Create Table") CreateTb 
+        ;;
+        
+        "List Tables") ListTb 
+        ;;
+        
+        "Drop Table") DropTb 
+        ;;
+        
+        "Insert into Table") InsertTb 
+        ;;
+        
+        "Select From Table") SelectTb 
+        ;;
+        
+        "Delete From Table") DeleteFromTb 
+        ;;
+        
+        "Update Table") UpdateTb 
+        ;;
+        
+        "Exit") 
+        echo "Exiting..."
+        break 
+        ;;
+        
         *)
-            zenity --error --text="Invalid Option. Please try again."
-            ;;
+	echo "Invalid Option. Please try again."
+	;;
     esac
 done
