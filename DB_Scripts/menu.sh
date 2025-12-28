@@ -3,7 +3,8 @@
 source ./Creation_function.sh 
 source ./List_function.sh
 source ./Drop_function.sh
-
+source ./TableMenu.sh
+source ./Connect_function.sh
 
 while true 
 do
@@ -59,9 +60,8 @@ echo -e "${BLUE}═════════════════════�
             read 
 	    ;;
             3)
-            
-            echo "Connect To Databases... "
-           
+            connect_func
+            read 
 	    ;;
             4)
              
@@ -71,7 +71,7 @@ echo -e "${BLUE}═════════════════════�
             5)
 	     
             echo "Exit... "
-	          exit 0
+	    exit 0
             ;;
             *)
 	    

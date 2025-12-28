@@ -1,21 +1,16 @@
 #!/bin/bash
 function DropTb {
-
+	local  DropName
+	
 	read -p "Enter The Table Name to Drop it: " DropName
 	
-	if [[ ! "$DropName" =~ ^[a-zA-Z_] ]]; then
-		echo "Erro: Invalid Table Name, The Name Must Start With a Letter or Underscore."
-	
-	elif [[ ! "$DropName" =~ ^[a-zA-Z_0-9]+$ ]]; then
-		echo "Error: Invalid Table Name, Contain Only Letters, Numbers, and Underscores."
-
-	elif [[ -f "$DropName" ]]; then
+   if [[ ! -f "$HOME/DBMS/DataBase/$db_name/$DropName" ]]; then
+     echo "Error: The Table "$DropName" Does not Exist."
+	   
+	eles
+	    cd "$HOME/DBMS/DataBase/$db_name"
 		rm -rf "$DropName" "$DropName".metadata
 		echo "Table "$DropName" successfuly Deleted."
-
-	else
-		echo "Error: The Table "$DropName" Does not Exist."
-
 	fi
 echo "======================================================"
 }

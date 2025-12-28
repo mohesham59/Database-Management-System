@@ -1,8 +1,9 @@
 #!/bin/bash
 
-source "$(dirname "$0")/lib/CreateTable.sh"
-source "$(dirname "$0")/lib/ListTable.sh"
-source "$(dirname "$0")/lib/DropTable.sh"
+TB_menu(){
+source "$HOME/DBMS/TableScripts/lib/CreateTable.sh"
+source "$HOME/DBMS/TableScripts/lib/ListTable.sh"
+source "$HOME/DBMS/TableScripts/lib/DropTable.sh"
 #-------------------------------------
 #---- Display Table Menu ----
 #-------------------------------------
@@ -20,25 +21,25 @@ echo "======================================================"
     fi
     
     case "$var" in
-        "Create Table") CreateTb 
+        "Create Table") CreateTb  "$1"
         ;;
         
-        "List Tables") ListTb 
+        "List Tables") ListTb "$1"
         ;;
         
-        "Drop Table") DropTb 
+        "Drop Table") DropTb "$1"
         ;;
         
-        "Insert into Table") InsertTb 
+        "Insert into Table") InsertTb "$1"
         ;;
         
-        "Select From Table") SelectTb 
+        "Select From Table") SelectTb "$1"
         ;;
         
-        "Delete From Table") DeleteFromTb 
+        "Delete From Table") DeleteFromTb "$1"
         ;;
         
-        "Update Table") UpdateTb 
+        "Update Table") UpdateTb "$1"
         ;;
         
         "Exit") 
@@ -51,3 +52,6 @@ echo "======================================================"
 	;;
     esac
 done
+
+
+}
