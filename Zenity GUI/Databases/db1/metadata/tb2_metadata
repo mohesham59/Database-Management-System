@@ -1,0 +1,12 @@
+"Column Name": id
+"Column Type": int
+"Primary Key": y
+-----
+"Column Name": name
+"Column Type": str
+"Primary Key": n
+-----
+"Column Name": age
+"Column Type": int
+"Primary Key": n
+-----

@@ -1,0 +1,8 @@
+"Column Name": id
+"Column Type": int
+"Primary Key": Yes (Primary Key)
+-----
+"Column Name": name
+"Column Type": str
+"Primary Key": No
+-----
