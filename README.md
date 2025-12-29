@@ -1,4 +1,4 @@
-# Bash-DBMS
+# Bash-DBMS 🐚🗄️
 
 A simple **Database Management System (DBMS)** implemented entirely in **Bash**, supporting **CLI, SQL, and GUI interfaces**.  
 It uses the filesystem for storage, where each database is a folder, each table is a CSV file, and metadata is stored separately.
