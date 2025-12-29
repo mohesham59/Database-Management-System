@@ -69,6 +69,7 @@ bash-dbms/
 │   └─ sql_select.sh
 │
 └─ main.sh                      # 🔹 Entry point
+```
 =======
 # Bash DBMS 🐚🗄️
 
