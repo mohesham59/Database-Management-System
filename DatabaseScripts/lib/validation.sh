@@ -6,8 +6,7 @@ validate_db_name() {
     select insert update delete create drop alter
     table from where join user database
   )
-
-
+  
   if [[ -z "$dbname" ]]; then
     echo "Invalid: name cannot be empty."
     return 1
@@ -31,7 +30,7 @@ validate_db_name() {
     return 1
   fi
 
-  # Check for reserved keywords (case-insensitive)
+  # Check for reserved keywords array  (case-insensitive)
   local dbname_lower="${dbname,,}"
   for word in "${reserved_keywords[@]}"; do
     if [[ "$dbname_lower" == "$word" ]]; then

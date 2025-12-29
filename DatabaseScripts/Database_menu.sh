@@ -6,9 +6,9 @@ source "$PROJECT_ROOT/DatabaseScripts/lib/Drop_function.sh"
 source "$PROJECT_ROOT/DatabaseScripts/lib/List_function.sh"
 source "$PROJECT_ROOT/DatabaseScripts/lib/Connected_function.sh"
 source "$PROJECT_ROOT/DatabaseScripts/lib/validation"
-while true 
-do
-#============== baner section =================
+
+#============== banner section =================
+menu_panner() {
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -17,30 +17,35 @@ MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-
 clear
-
 
 echo -e "${CYAN}╔══════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${CYAN}║                                                              ║${NC}"
-echo -e "${CYAN}║${YELLOW}  ██╗████████╗██╗    ██████╗ ██████╗ ███╗   ███╗███████╗  ${CYAN}    ║${NC}"
-echo -e "${CYAN}║${YELLOW}  ██║╚══██╔══╝██║    ██╔══██╗██╔══██╗████╗ ████║██╔════╝  ${CYAN}    ║${NC}"
-echo -e "${CYAN}║${YELLOW}  ██║   ██║   ██║    ██║  ██║██████╔╝██╔████╔██║███████╗  ${CYAN}    ║${NC}"
-echo -e "${CYAN}║${YELLOW}  ██║   ██║   ██║    ██║  ██║██╔══██╗██║╚██╔╝██║╚════██║  ${CYAN}    ║${NC}"
-echo -e "${CYAN}║${YELLOW}  ██║   ██║   ██║    ██████╔╝██████╔╝██║ ╚═╝ ██║███████║  ${CYAN}    ║${NC}"
-echo -e "${CYAN}║${YELLOW}  ╚═╝   ╚═╝   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝  ${CYAN}    ║${NC}"
+echo -e "${CYAN}║${YELLOW}  ██╗████████╗██╗    ██████╗ ██████╗ ███╗   ███╗███████╗      ${CYAN}║${NC}"
+echo -e "${CYAN}║${YELLOW}  ██║╚══██╔══╝██║    ██╔══██╗██╔══██╗████╗ ████║██╔════╝      ${CYAN}║${NC}"
+echo -e "${CYAN}║${YELLOW}  ██║   ██║   ██║    ██║  ██║██████╔╝██╔████╔██║███████╗      ${CYAN}║${NC}"
+echo -e "${CYAN}║${YELLOW}  ██║   ██║   ██║    ██║  ██║██╔══██╗██║╚██╔╝██║╚════██║      ${CYAN}║${NC}"
+echo -e "${CYAN}║${YELLOW}  ██║   ██║   ██║    ██████╔╝██████╔╝██║ ╚═╝ ██║███████╗      ${CYAN}║${NC}"
+echo -e "${CYAN}║${YELLOW}  ╚═╝   ╚═╝   ╚═╝    ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝      ${CYAN}║${NC}"
 echo -e "${CYAN}║                                                              ║${NC}"
 echo -e "${CYAN}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
 echo -e "${GREEN}                  Supervised by : ${NC}"
 echo -e "${CYAN}                  DR|Shreen Bahader${NC}"
-echo -e "${GREEN}                  Created  by :${NC}"
+echo -e "${GREEN}                  Created by :${NC}"
 echo -e "${MAGENTA}                  Fouad Yasser${NC}"
 echo -e "${MAGENTA}                  Mohamed Hesham${NC}"
 echo ""
+
 echo -e "${BLUE}════════════════════════════════════════════════════════════════${NC}"
-   echo "1) Create Database"
+}
+#=====================================================
+
+while true 
+do
+    menu_panner
+    echo "1) Create Database"
     echo "2) List Databases"
     echo "3) Connect To Database"
     echo "4) Drop Database"
@@ -49,7 +54,8 @@ echo -e "${BLUE}═════════════════════�
 
     read -p $'\033[1;33mPelect an option (1-5): \033[0m' choice
 
-    echo -e "\033[0;34m════════════════════════════════════════════════════════════════\033[0m"
+    echo -e "\033[0;34m════════════════════════════════════════════════════════════════\033[0m" 
+
             case $choice in
             1)
             

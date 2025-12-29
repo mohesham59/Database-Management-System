@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Check if PROJECT_ROOT variable is empty or not set
 # If it is empty, calculate the project root directory dynamically
 if [[ -z "$PROJECT_ROOT" ]]; then
 	# ${BASH_SOURCE[0]} = full path to the current script (TableMenu.sh)
    	# dirname = extracts the directory part
-    	# cd .. / .. = goes up two levels from the script's location (TableScripts/ → project root)
-    	# pwd = prints the absolute path of the project root
-    	PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+    # cd .. / .. = goes up two levels from the script's location (TableScripts/ → project root)
+    # pwd = prints the absolute path of the project root
+    PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 fi
 
 # Define a helper function to safely source library scripts
@@ -18,16 +18,16 @@ source_if_exists() {
     else
         echo "Missing: $file"
     fi
-}
+    }
 
 
 source_if_exists "$PROJECT_ROOT/TableScripts/lib/CreateTable.sh"
-source_if_exists "$PROJECT_ROOT/TableScripts/lib/DropTable.sh"
 source_if_exists "$PROJECT_ROOT/TableScripts/lib/InsertIntoTable.sh"
 source_if_exists "$PROJECT_ROOT/TableScripts/lib/ListTable.sh"
 source_if_exists "$PROJECT_ROOT/TableScripts/lib/SelectFromTable.sh"  
 source_if_exists "$PROJECT_ROOT/TableScripts/lib/DeleteFromTable.sh" 
 source_if_exists "$PROJECT_ROOT/TableScripts/lib/UpadateTable.sh"      
+ 
 
 if [[ ! -f "$PROJECT_ROOT/TableScripts/lib/CreateTable.sh" ]]; then
     echo "Critical: CreateTable.sh not found! Check folder structure."
