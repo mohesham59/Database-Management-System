@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Bash-DBMS
 
 A simple **Database Management System (DBMS)** implemented entirely in **Bash**, supporting **CLI, SQL, and GUI interfaces**.  
@@ -267,5 +266,5 @@ Built with ❤️ using Bash for learning and educational purposes.
 
 This project is open-source and free to use for educational purposes.
 
->>>>>>> TableScript
+
 
