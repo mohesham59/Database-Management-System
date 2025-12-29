@@ -18,7 +18,7 @@ function ConnectDb(){
     	mkdir -p "$db_path/tables"
     	mkdir -p "$db_path/metadata"
     	
-    	cd "$db_path" || exit
+    	cd "$db_path" 
     	echo "Connected to database: $Database_connect"
     	echo "======================================================"
     	
