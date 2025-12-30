@@ -15,11 +15,10 @@ The main goal of this project is to understand:
 
     bash-dbms/
     │
-    ├── storage/                     # Storage Layer
-    │   ├── databases/               # Each database is a directory
-    │      └── <db_name>/
-    │          ├── tables/           # Table data files
-    │          └── metadata/         # Table metadata files
+    ├── databases/               # Each database is a directory
+    │   └── <db_name>/
+    │      ├── tables/           # Table data files
+    │      └── metadata/         # Table metadata files
     │             
     │
     ├── DatabaseScripts/              # Database Logic (CLI)
