@@ -1,11 +1,14 @@
 #!/bin/bash
 # ================================================
-# Select_Table.sh (Proper Table View)
+# Select_Table_With_Where.sh
+# SELECT * FROM table WHERE column = value
 # ================================================
 
 SelectTb() {
 
+    # ===============================
     # Check connection
+    # ===============================
     if [[ -z "$CURRENT_DB" ]]; then
         zenity --error \
             --title="Not Connected ❌" \
@@ -14,7 +17,9 @@ SelectTb() {
         return 1
     fi
 
+    # ===============================
     # Check tables
+    # ===============================
     if [[ ! -d "tables" ]] || [[ -z "$(ls -A tables/ 2>/dev/null)" ]]; then
         zenity --info \
             --title="No Tables | DB: $CURRENT_DB" \
@@ -23,9 +28,11 @@ SelectTb() {
         return 0
     fi
 
+    # ===============================
     # Select table
+    # ===============================
     TableSelect=$(zenity --list \
-        --title="Select From Table | DB: $CURRENT_DB" \
+        --title="Select Table | DB: $CURRENT_DB" \
         --text="Select table:" \
         --column="Table Name" \
         --width=600 \
@@ -54,11 +61,38 @@ SelectTb() {
     done < <(awk -F': ' '/"Column Name"/ {print $2}' "$Metadata_file")
 
     # ===============================
-    # Build zenity command dynamically
+    # WHERE clause
+    # ===============================
+
+    WhereColumn=$(zenity --list \
+        --title="WHERE Condition | DB: $CURRENT_DB" \
+        --text="Select column:" \
+        --column="Columns" \
+        "${columns[@]}")
+
+    [[ -z "$WhereColumn" ]] && return 0
+
+    # Get column index
+    col_index=0
+    for i in "${!columns[@]}"; do
+        if [[ "${columns[$i]}" == "$WhereColumn" ]]; then
+            col_index=$i
+            break
+        fi
+    done
+
+    WhereValue=$(zenity --entry \
+        --title="WHERE Condition" \
+        --text="Enter value for:\n$WhereColumn")
+
+    [[ -z "$WhereValue" ]] && return 0
+
+    # ===============================
+    # Build zenity table
     # ===============================
     zenity_cmd=(zenity --list
-        --title="Table: $TableSelect | DB: $CURRENT_DB"
-        --width=800
+        --title="SELECT * FROM $TableSelect WHERE $WhereColumn = $WhereValue"
+        --width=900
         --height=500
     )
 
@@ -67,13 +101,30 @@ SelectTb() {
         zenity_cmd+=(--column="$col")
     done
 
-    # Add data rows (row by row)
+    # ===============================
+    # Filter data
+    # ===============================
+    match_found=false
+
     while IFS='|' read -r -a row; do
-        for cell in "${row[@]}"; do
-            zenity_cmd+=("$cell")
-        done
+        if [[ "${row[$col_index]}" == "$WhereValue" ]]; then
+            match_found=true
+            for cell in "${row[@]}"; do
+                zenity_cmd+=("$cell")
+            done
+        fi
     done < "$Table_file"
 
-    # Show table
+    if [[ "$match_found" == false ]]; then
+        zenity --info \
+            --title="No Results" \
+            --text="No matching records found." \
+            --width=400
+        return 0
+    fi
+
+    # ===============================
+    # Show result
+    # ===============================
     "${zenity_cmd[@]}"
 }
