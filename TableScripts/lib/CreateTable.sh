@@ -4,6 +4,7 @@
 #---- Create Table ----
 #-------------------------------------
 function CreateTb {
+    Columns=() 
 	while true
 	do
         local TableName
@@ -78,8 +79,7 @@ function CreateTb {
 		do
 			read -p "Enter the Data Type (Str/Int) of Coulmn ($ColumnName): " ColumnType
 			
-			if [[ "$ColumnType" == "str" || "$ColumnType" == "Str" || "$ColumnType" == "STR" || \
-	      			"$ColumnType" == "int" || "$ColumnType" == "Int" || "$ColumnType" == "INT" ]]; then
+			if [[ "$ColumnType^^" == "STR" || "$ColumnType^^" == "INT" ]]; then
 					break
 			else
 				echo "Error: Invalid Column Type, The Type Must be String or Integer"
@@ -93,8 +93,7 @@ function CreateTb {
 		do
 			read -p "Is ("$ColumnName") a Primary Key (Yes/No): " ColumnPk
 
-			if [[ "$ColumnPk" == "Yes" || "$ColumnPk" == "yes" || "$ColumnPk" == "YES" || "$ColumnPk" == "y" || "$ColumnPk" == "Y" || \
-			       "$ColumnPk" == "No" || "$ColumnPk" == "no" || "$ColumnPk" == "NO" || "$ColumnPk" == "n" || "$ColumnPk" == "N" ]]; then
+			if if [[ "$ColumnPk" =~ ^([Yy](es)?|[Nn](o)?)$ ]]; then
 					break
 			else
 				echo "Error: Invalid Input for Primary Key, Must be Yes or No"
