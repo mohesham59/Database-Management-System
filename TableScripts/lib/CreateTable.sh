@@ -7,7 +7,6 @@ function CreateTb {
 	while true
 	do
         local TableName
-		local db_name="$1"
 		read -p "Enter The Table Name: " TableName
 
 		if [[ ! "$TableName" =~ ^[a-zA-Z_] ]]; then
