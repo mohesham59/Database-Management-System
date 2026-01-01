@@ -18,8 +18,7 @@ function DropTb {
 
 		echo "Error: The Table "$DropName" Does not Exist."
 
-		echo "Warning: Table '$DropName' does not exist."
-    	fi
+	fi
 
 
 }
