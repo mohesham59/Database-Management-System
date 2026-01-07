@@ -1,4 +1,7 @@
 #!/bin/bash
+# ================================================
+# Create_DB.sh (FIXED - Character encoding)
+# ================================================
 
 # Function to create a new database
 CreationFunction() {
@@ -17,7 +20,7 @@ CreationFunction() {
     if [[ ! "$Db_Name" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]] || [[ -z "$Db_Name" ]]; then
         zenity --error \
             --title="Invalid Name" \
-            --text="Invalid database name.\n\nRules:\n• Must start with a letter or underscore\n• Can only contain letters, numbers, and underscores\n• Cannot be empty" \
+            --text="Invalid database name.\n\nRules:\n- Must start with a letter or underscore\n- Can only contain letters, numbers, and underscores\n- Cannot be empty" \
             --width=500
         return 1
     fi
@@ -29,7 +32,7 @@ CreationFunction() {
     if [[ -d "$db_path" ]]; then
         zenity --error \
             --title="Already Exists" \
-            --text="The database '<b>$Db_Name</b>' already exists." \
+            --text="The database '$Db_Name' already exists." \
             --width=450
         return 1
     fi
@@ -41,7 +44,7 @@ CreationFunction() {
     # Show success message
     zenity --info \
         --title="Success" \
-        --text="Database '<b>$Db_Name</b>' was created successfully! 🎉\n\nLocation: $db_path" \
+        --text="Database '$Db_Name' was created successfully!\n\nLocation: $db_path" \
         --width=500
 
     return 0
