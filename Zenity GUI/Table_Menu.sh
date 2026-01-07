@@ -1,23 +1,27 @@
 #!/bin/bash
 # ================================================
-# TableMenu.sh (Updated - Fixed cd issue)
+# Table_Menu.sh (FIXED - Proper sourcing)
+# Fixed: Sourcing files when pwd changes to DB directory
 # ================================================
 
+# FIXED: Get the absolute path to the script directory
+# This allows sourcing files even when pwd changes to Databases/dbname/
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Source table functions from ROOT (pwd=DB dir → ../../)
-source ./Create_Table.sh
-source ./List_Table.sh
-source ./Drop_Table.sh
-source ./Insert_Table.sh
-source ./Select_Table.sh
-source ./Delete_From_Table.sh
-source ./Update_Table.sh
+# Source table functions using absolute paths
+source "$SCRIPT_DIR/Create_Table.sh"
+source "$SCRIPT_DIR/List_Table.sh"
+source "$SCRIPT_DIR/Drop_Table.sh"
+source "$SCRIPT_DIR/Insert_Table.sh"
+source "$SCRIPT_DIR/Select_Table.sh"
+source "$SCRIPT_DIR/Delete_From_Table.sh"
+source "$SCRIPT_DIR/Update_Table.sh"
 
 # Zenity-based Table Menu
 TableMenu() {
     while true; do
         choice=$(zenity --list \
-            --title="📋 Table Manager | DB: $CURRENT_DB" \
+            --title="Table Manager | DB: $CURRENT_DB" \
             --width=650 \
             --height=550 \
             --column="Option" --column="Description" \
@@ -30,16 +34,20 @@ TableMenu() {
             7 "Update Table" \
             8 "Exit to DB Menu")
 
-        # If user clicks Cancel or closes → exit table menu and go back to ROOT
+        # If user clicks Cancel or closes - exit table menu
         if [[ $? -ne 0 ]]; then
-            cd ../../  # Back to project root: Databases/db1 → Databases → root
-            zenity --info --width=450 --height=200 --title="Back" --text="Returned to Database Menu 👋"
+            # FIXED: Return to script root directory
+            cd "$SCRIPT_DIR" || {
+                zenity --error --text="Failed to return to main directory"
+                return 1
+            }
+            zenity --info --width=450 --height=200 --title="Back" --text="Returned to Database Menu"
             return 0
         fi
 
         case "$choice" in
             1)
-                CreateTb  # Placeholder or your function
+                CreateTb
                 ;;
             2)
                 ListTb
@@ -60,8 +68,12 @@ TableMenu() {
                 UpdateTb
                 ;;
             8)
-                cd ../../  # Back to project root
-                zenity --info --width=450 --height=200 --title="Exit Table Menu" --text="Back to Database Menu 😎"
+                # FIXED: Return to script root directory
+                cd "$SCRIPT_DIR" || {
+                    zenity --error --text="Failed to return to main directory"
+                    return 1
+                }
+                zenity --info --width=450 --height=200 --title="Exit Table Menu" --text="Back to Database Menu"
                 return 0
                 ;;
             *)
