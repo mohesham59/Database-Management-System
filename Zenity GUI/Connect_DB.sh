@@ -1,6 +1,6 @@
 #!/bin/bash
 # ================================================
-# Connect_DB.sh
+# Connect_DB.sh (FIXED)
 # ================================================
 
 # Source the TableMenu file (to make TableMenu available)
@@ -56,7 +56,7 @@ ConnectDb() {
     # Show success message
     zenity --info \
         --title="Connection Successful" \
-        --text="Connected to database: <b>$CURRENT_DB</b>\n\nYou can now manage tables." \
+        --text="Connected to database: $CURRENT_DB\n\nYou can now manage tables." \
         --width=500
 
     # Call the Table Menu
