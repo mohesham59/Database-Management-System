@@ -1,13 +1,12 @@
 #!/bin/bash
 # ================================================
-# Update_Table.sh (Zenity GUI Version)
-# Allows updating a specific column value in a table
+# Update_Table.sh (FIXED - PK index)
 # ================================================
 
 UpdateTb() {
 
     # ===============================
-    # 1️⃣ Check database connection
+    # 1. Check database connection
     # ===============================
     if [[ -z "$CURRENT_DB" ]]; then
         zenity --error \
@@ -18,7 +17,7 @@ UpdateTb() {
     fi
 
     # ===============================
-    # 2️⃣ Prompt user to select a table
+    # 2. Prompt user to select a table
     # ===============================
     TableUpdate=$(zenity --list \
         --title="Update Table | DB: $CURRENT_DB" \
@@ -26,15 +25,28 @@ UpdateTb() {
         --column="Table Name" \
         --width=600 \
         --height=450 \
-        $(ls tables/))
+        $(ls tables/ 2>/dev/null))
 
-    [[ -z "$TableUpdate" ]] && return 0  # Exit if no table selected
+    [[ -z "$TableUpdate" ]] && return 0
 
-    Table_file="tables/$TableUpdate"                   # Data file
-    Metadata_file="metadata/${TableUpdate}_metadata"  # Schema file
+    Table_file="tables/$TableUpdate"
+    Metadata_file="metadata/${TableUpdate}_metadata"
+
+    # Check if files exist
+    if [[ ! -f "$Table_file" ]]; then
+        zenity --error --title="Table Not Found" \
+            --text="Table file does not exist." --width=450
+        return 1
+    fi
+
+    if [[ ! -f "$Metadata_file" ]]; then
+        zenity --error --title="Metadata Missing" \
+            --text="Metadata file is missing." --width=450
+        return 1
+    fi
 
     # ===============================
-    # 3️⃣ Check if table has data
+    # 3. Check if table has data
     # ===============================
     if [[ ! -s "$Table_file" ]]; then
         zenity --info \
@@ -45,23 +57,22 @@ UpdateTb() {
     fi
 
     # ===============================
-    # 4️⃣ Read table metadata to get columns and primary key
+    # 4. Read table metadata to get columns and primary key
     # ===============================
-    columns=()       # Array to store column names
-    primary_key=""   # Name of primary key column
-    index=0          # Index for iterating
-    pk_index=0       # Index of primary key column
+    columns=()
+    primary_key=""
+    pk_index=0
+    current_col=""
 
+    # FIXED: Better primary key index tracking
     while read -r line; do
-        # Match lines containing column names
         if [[ $line =~ \"Column\ Name\":\ (.*) ]]; then
-            columns+=("${BASH_REMATCH[1]}")
-            index=$((index+1))
             current_col="${BASH_REMATCH[1]}"
-        # Check if this column is primary key
+            columns+=("$current_col")
         elif [[ $line =~ \"Primary\ Key\":\ y ]]; then
             primary_key="$current_col"
-            pk_index=$index
+            # Use array length for correct index (1-based for cut)
+            pk_index=${#columns[@]}
         fi
     done < "$Metadata_file"
 
@@ -74,7 +85,7 @@ UpdateTb() {
     fi
 
     # ===============================
-    # 5️⃣ Display table and let user select a record
+    # 5. Display table and let user select a record
     # ===============================
     zenity_cmd=(zenity --list
         --title="Select Record | DB: $CURRENT_DB"
@@ -95,14 +106,14 @@ UpdateTb() {
         done
     done < "$Table_file"
 
-    selected_row=$("${zenity_cmd[@]}")  # Show Zenity list and get selected row
-    [[ -z "$selected_row" ]] && return 0   # Exit if no row selected
+    selected_row=$("${zenity_cmd[@]}")
+    [[ -z "$selected_row" ]] && return 0
 
     # Extract primary key value of the selected row
     pk_value=$(echo "$selected_row" | cut -d'|' -f"$pk_index")
 
     # ===============================
-    # 6️⃣ Prompt user to select column to update
+    # 6. Prompt user to select column to update
     # ===============================
     update_column=$(zenity --list \
         --title="Select Column | DB: $CURRENT_DB" \
@@ -112,7 +123,7 @@ UpdateTb() {
         --height=300 \
         $(printf "%s\n" "${columns[@]}"))
 
-    [[ -z "$update_column" ]] && return 0  # Exit if no column selected
+    [[ -z "$update_column" ]] && return 0
 
     if [[ "$update_column" == "$primary_key" ]]; then
         zenity --error \
@@ -123,7 +134,7 @@ UpdateTb() {
     fi
 
     # ===============================
-    # 7️⃣ Get index of the column to update
+    # 7. Get index of the column to update
     # ===============================
     col_index=0
     for i in "${!columns[@]}"; do
@@ -134,30 +145,30 @@ UpdateTb() {
     done
 
     # ===============================
-    # 8️⃣ Prompt user to enter new value
+    # 8. Prompt user to enter new value
     # ===============================
     new_value=$(zenity --entry \
         --title="Update Value | DB: $CURRENT_DB" \
         --text="Enter new value for:\n\n$update_column" \
         --width=450)
 
-    [[ $? -ne 0 ]] && return 0  # Exit if user cancels
+    [[ $? -ne 0 ]] && return 0
 
     # ===============================
-    # 9️⃣ Update the record in the table file
+    # 9. Update the record in the table file
     # ===============================
     awk -F'|' -v pk="$pk_value" -v pk_i="$pk_index" \
         -v col="$col_index" -v val="$new_value" '
-    BEGIN { OFS="|"; }  # Output field separator
+    BEGIN { OFS="|"; }
     {
-        if ($pk_i == pk) {  # Match row using primary key
-            $col = val       # Update target column with new value
+        if ($pk_i == pk) {
+            $col = val
         }
-        print                # Print the row (updated or unchanged)
-    }' "$Table_file" > temp && mv temp "$Table_file"  # Save changes
+        print
+    }' "$Table_file" > temp && mv temp "$Table_file"
 
     # ===============================
-    # 10️⃣ Show success message
+    # 10. Show success message
     # ===============================
     zenity --info \
         --title="Updated | DB: $CURRENT_DB" \
