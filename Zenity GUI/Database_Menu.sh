@@ -1,4 +1,7 @@
 #!/bin/bash
+# ================================================
+# Database_Menu.sh (FIXED - Character encoding)
+# ================================================
 
 # Directory to store all databases
 DB_ROOT="./Databases"
@@ -10,12 +13,11 @@ source ./List_DB.sh
 source ./Drop_DB.sh
 source ./Connect_DB.sh
 
-
 # Main menu loop - keeps running until exit
 while true
 do
     choice=$(zenity --list \
-        --title="🐘 Bash DBMS" \
+        --title="Bash DBMS" \
         --width=600 \
         --height=500 \
         --column="Option" --column="Description" \
@@ -25,9 +27,9 @@ do
         4 "Drop Database" \
         5 "Exit")
 
-    # If user clicks Cancel or closes the window → show goodbye and exit
+    # If user clicks Cancel or closes the window - show goodbye and exit
     if [[ $? -ne 0 ]]; then
-        zenity --info --width=450 --height=250 --title="Goodbye" --text="Thank you for using Bash DBMS 👋\nSee you soon!"
+        zenity --info --width=450 --height=250 --title="Goodbye" --text="Thank you for using Bash DBMS!\nSee you soon!"
         exit 0
     fi
 
@@ -45,7 +47,7 @@ do
             Drop_func
             ;;
         5)
-            zenity --width=400 --height=200 --info --title="Exit" --text="Thank you for using Bash DBMS 👋"
+            zenity --width=400 --height=200 --info --title="Exit" --text="Thank you for using Bash DBMS!"
             exit 0
             ;;
         *)
