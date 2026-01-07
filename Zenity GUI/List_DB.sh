@@ -1,4 +1,7 @@
 #!/bin/bash
+# ================================================
+# List_DB.sh (FIXED)
+# ================================================
 
 # Function to list all existing databases
 List_func() {
