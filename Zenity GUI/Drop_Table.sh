@@ -1,9 +1,14 @@
+#!/bin/bash
+# ================================================
+# Drop_Table.sh (FIXED - Character encoding)
+# ================================================
+
 DropTb() {
 
     # Make sure user is connected to a DB
     if [[ -z "$CURRENT_DB" ]]; then
         zenity --error \
-            --title="Not Connected ❌" \
+            --title="Not Connected" \
             --text="You are not connected to any database.\n\nPlease connect to a database first." \
             --width=450
         return 1
@@ -19,8 +24,8 @@ DropTb() {
     fi
 
     Table_drop=$(zenity --list \
-        --title="Drop Table 🗑️ | DB: $CURRENT_DB" \
-        --text="Select the table you want to <b>permanently delete</b>:" \
+        --title="Drop Table | DB: $CURRENT_DB" \
+        --text="Select the table you want to permanently delete:" \
         --column="Table Name" \
         --width=600 \
         --height=450 \
@@ -31,15 +36,15 @@ DropTb() {
     fi
 
     if zenity --question \
-        --title="Confirm Deletion ⚠️ | DB: $CURRENT_DB" \
-        --text="Are you <b>ABSOLUTELY SURE</b> you want to delete the table:\n\n<b>$Table_drop</b>\n\nFrom database:\n<b>$CURRENT_DB</b>\n\nThis action cannot be undone!" \
+        --title="Confirm Deletion | DB: $CURRENT_DB" \
+        --text="Are you ABSOLUTELY SURE you want to delete the table:\n\n$Table_drop\n\nFrom database:\n$CURRENT_DB\n\nThis action cannot be undone!" \
         --width=550 --height=250; then
 
         rm -f "tables/$Table_drop" "metadata/${Table_drop}_metadata"
 
         zenity --warning \
-            --title="Table Dropped ✅ | DB: $CURRENT_DB" \
-            --text="Table '<b>$Table_drop</b>' has been permanently deleted." \
+            --title="Table Dropped | DB: $CURRENT_DB" \
+            --text="Table '$Table_drop' has been permanently deleted." \
             --width=500
     fi
 }
