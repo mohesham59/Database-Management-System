@@ -1,17 +1,23 @@
 #!/bin/bash
 # ================================================
-# Create_Table.sh (Fixed Paths + Bugs)
+# Create_Table.sh (FIXED - Single PK enforcement)
+# Fixed: paths, duplicate columns, single PK only
 # ================================================
 
-# Create Table Function (Zenity - Fixed paths: table/ & metadata/)
 CreateTb() {
     # Ensure subdirs exist
     mkdir -p tables metadata
 
+    # Array to track column names (prevent duplicates)
+    declare -a existing_columns
+    
+    # FIXED: Declare PK flag OUTSIDE the loop
+    primary_key_set=""
+
     # Loop for valid table name
     while true; do
         table_name=$(zenity --entry \
-            --title="Create Table 🆕" \
+            --title="Create Table" \
             --text="Enter Table Name:\n(Rules: letter/_ start, letters/numbers/_ only)" \
             --width=500)
 
@@ -20,15 +26,15 @@ CreateTb() {
         fi
 
         if [[ ! "$table_name" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ || -z "$table_name" ]]; then
-            zenity --error --title="Invalid Name ❌" \
+            zenity --error --title="Invalid Name" \
                 --text="Invalid Table Name!\nMust start with letter/_, letters/numbers/_ only." \
                 --width=450
             continue
         fi
 
-        if [[ -f "table/$table_name" ]]; then
-            zenity --warning --title="Already Exists ⚠️" \
-                --text="Table '<b>$table_name</b>' already exists in <b>table/</b>!" \
+        if [[ -f "tables/$table_name" ]]; then
+            zenity --warning --title="Already Exists" \
+                --text="Table '$table_name' already exists in tables/!" \
                 --width=450
             return 1
         fi
@@ -39,8 +45,8 @@ CreateTb() {
     # Create files in correct paths
     touch "tables/$table_name"
     touch "metadata/${table_name}_metadata"
-    zenity --info --title="Table Files Created 📄" \
-        --text="Created:\n• <b>table/$table_name</b>\n• <b>metadata/${table_name}_metadata</b>" \
+    zenity --info --title="Table Files Created" \
+        --text="Created:\n- tables/$table_name\n- metadata/${table_name}_metadata" \
         --width=450
 
     # Number of columns
@@ -52,7 +58,7 @@ CreateTb() {
 
         if [[ $? -ne 0 ]]; then
             zenity --warning --title="Cancelled" --text="Table creation cancelled."
-            rm -f "table/$table_name" "metadata/${table_name}_metadata"  # Fixed cleanup paths
+            rm -f "tables/$table_name" "metadata/${table_name}_metadata"
             return 1
         fi
 
@@ -71,16 +77,37 @@ CreateTb() {
                 --title="Column $i / $numColumns" \
                 --text="Enter Name for Column $i:\n(letter/_ start, letters/numbers/_ only)" \
                 --width=500)
+            
             if [[ $? -ne 0 ]]; then
                 zenity --warning --title="Cancelled" --text="Table creation cancelled."
-                rm -f "table/$table_name" "metadata/${table_name}_metadata"
+                rm -f "tables/$table_name" "metadata/${table_name}_metadata"
                 return 1
             fi
-            if [[ "$columnName" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ && -n "$columnName" ]]; then
-                break
-            else
+            
+            if [[ ! "$columnName" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ || -z "$columnName" ]]; then
                 zenity --error --title="Invalid Name" --text="Invalid Column Name!"
+                continue
             fi
+            
+            # Check for duplicate column names
+            is_duplicate=false
+            for existing_col in "${existing_columns[@]}"; do
+                if [[ "$columnName" == "$existing_col" ]]; then
+                    zenity --error --title="Duplicate Column" \
+                        --text="Column '$columnName' already exists!\nPlease choose a different name." \
+                        --width=450
+                    is_duplicate=true
+                    break
+                fi
+            done
+            
+            if [[ "$is_duplicate" == true ]]; then
+                continue
+            fi
+            
+            # Add to existing columns
+            existing_columns+=("$columnName")
+            break
         done
 
         # Column Type
@@ -95,27 +122,34 @@ CreateTb() {
             columnType="str"
         fi
 
-        # Primary Key (map "Yes (Primary Key)" → "y", "No" → "n")
-        pk_choice=$(zenity --list \
-            --title="Column $i: $columnName ($columnType)" \
-            --text="Is Primary Key?" \
-            --width=450 --height=200 \
-            --column="Choice" \
-            "Yes (Primary Key)" \
-            "No" \
-            --print-column=1)
+        # FIXED: Primary Key - Only ask if no PK has been set yet
+        if [[ -z "$primary_key_set" ]]; then
+            pk_choice=$(zenity --list \
+                --title="Column $i: $columnName ($columnType)" \
+                --text="Is this column the Primary Key?\n(Only one column can be PK)" \
+                --width=450 --height=250 \
+                --column="Choice" \
+                "Yes (Set as Primary Key)" \
+                "No" \
+                --print-column=1)
 
-        if [[ $? -ne 0 || -z "$pk_choice" ]]; then
-            columnPK="n"
-        else
-            if [[ "$pk_choice" == "Yes"* ]]; then
+            if [[ $? -ne 0 ]]; then
+                columnPK="n"
+            elif [[ "$pk_choice" == "Yes"* ]]; then
                 columnPK="y"
+                primary_key_set="$columnName"  # Store which column is PK
+                zenity --info --title="Primary Key Set" \
+                    --text="Column '$columnName' is now the Primary Key.\n\nRemaining columns will automatically be set as non-PK." \
+                    --width=450
             else
                 columnPK="n"
             fi
+        else
+            # PK already set - automatically set to "n"
+            columnPK="n"
         fi
 
-        # Append to metadata (Fixed path)
+        # Append to metadata
         {
             echo "\"Column Name\": $columnName"
             echo "\"Column Type\": $columnType"
@@ -124,9 +158,17 @@ CreateTb() {
         } >> "metadata/${table_name}_metadata"
     done
 
+    # FIXED: Verify that at least one PK was set
+    if [[ -z "$primary_key_set" ]]; then
+        zenity --warning \
+            --title="No Primary Key" \
+            --text="Warning: No primary key was set for this table.\n\nSome operations may not work correctly without a primary key." \
+            --width=500
+    fi
+
     # Success
     zenity --info \
-        --title="Success 🎉" \
-        --text="Table '<b>$table_name</b>' created with <b>$numColumns</b> columns!\n\n• Data: <b>table/$table_name</b>\n• Schema: <b>metadata/${table_name}_metadata</b>" \
+        --title="Success" \
+        --text="Table '$table_name' created with $numColumns columns!\n\nPrimary Key: ${primary_key_set:-None}\n\n- Data: tables/$table_name\n- Schema: metadata/${table_name}_metadata" \
         --width=500
 }
