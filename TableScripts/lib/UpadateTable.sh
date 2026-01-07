@@ -22,6 +22,12 @@ UpdateTb() {
         return 1
     fi
 
+    # FIXED: Check if table is empty
+    if [[ ! -s "$table_file" ]]; then
+        echo "Table '$TableUpdate' is empty. No records to update."
+        return 0
+    fi
+
     # Display a separator line for better visual organization
     echo "======================================================"
     # Show the current contents of the table before any changes are made
@@ -135,8 +141,20 @@ EOF
     }
     { print }
     END {
-        if (!found) print "Error: Record not found for update." > "/dev/stderr"
-    }' "$table_file" > temp_table && mv temp_table "$table_file"
+        if (!found) {
+            print "Error: Record not found for update." > "/dev/stderr"
+            exit 1
+        }
+    }' "$table_file" > temp_table
+    
+    # FIXED: Check if awk succeeded
+    if [[ $? -ne 0 ]]; then
+        rm -f temp_table
+        echo "Update failed."
+        return 1
+    fi
+    
+    mv temp_table "$table_file"
 
     # Confirm successful update to the user
     echo "Record updated successfully!"
