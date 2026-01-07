@@ -1,25 +1,23 @@
 #!/bin/bash
 # ================================================
-# Delete_From_Table.sh (Zenity GUI Version)
+# Delete_From_Table.sh (FIXED - Debug version)
 # ================================================
-# Function to delete a record from a table in the current database using Zenity GUI
 
 DeleteFromTb() {
 
     # ===============================
-    # 1️⃣ Check if connected to a database
+    # 1. Check if connected to a database
     # ===============================
     if [[ -z "$CURRENT_DB" ]]; then
-        # If CURRENT_DB is empty → no connection
         zenity --error \
-            --title="Not Connected ❌" \
+            --title="Not Connected" \
             --text="Please connect to a database first." \
             --width=450
-        return 1  # Exit function with error code
+        return 1
     fi
 
     # ===============================
-    # 2️⃣ Let user select table
+    # 2. Let user select table
     # ===============================
     TableSelectDel=$(zenity --list \
         --title="Delete Record | DB: $CURRENT_DB" \
@@ -27,54 +25,74 @@ DeleteFromTb() {
         --column="Table Name" \
         --width=600 \
         --height=450 \
-        $(ls tables/))  # List all tables in the tables/ folder
+        $(ls tables/ 2>/dev/null))
 
-    # If user cancels → exit
+    # If user cancels - exit
     [[ -z "$TableSelectDel" ]] && return 0
 
     # Define file paths
     Table_file="tables/$TableSelectDel"
     Metadata_file="metadata/${TableSelectDel}_metadata"
 
-    # ===============================
-    # 3️⃣ Extract columns and primary key info from metadata
-    # ===============================
-    columns=()      # Array to store column names
-    pk_column=""    # Store the name of the primary key column
-    pk_index=0      # Store index of primary key column (used for deletion)
-    index=0         # Counter for column index
+    # Check if files exist
+    if [[ ! -f "$Table_file" ]]; then
+        zenity --error --title="Table Not Found" \
+            --text="Table file does not exist." --width=450
+        return 1
+    fi
 
-    # Read metadata file line by line
+    if [[ ! -f "$Metadata_file" ]]; then
+        zenity --error --title="Metadata Missing" \
+            --text="Metadata file is missing." --width=450
+        return 1
+    fi
+
+    # Check if table has data
+    if [[ ! -s "$Table_file" ]]; then
+        zenity --info --title="Empty Table" \
+            --text="Table '$TableSelectDel' has no data." --width=450
+        return 0
+    fi
+
+    # ===============================
+    # 3. Extract columns and primary key info from metadata
+    # ===============================
+    columns=()
+    pk_column=""
+    pk_index=0
+    current_col=""
+    col_counter=0
+
     while read -r line; do
-        # Check for column name line
         if [[ $line =~ \"Column\ Name\":\ (.*) ]]; then
-            columns+=("${BASH_REMATCH[1]}")  # Add column name to array
-            current_col="${BASH_REMATCH[1]}" # Temporarily store current column
-            index=$((index+1))               # Increase column index
-        # Check if this column is primary key
+            current_col="${BASH_REMATCH[1]}"
+            ((col_counter++))
+            columns+=("$current_col")
+            
         elif [[ $line =~ \"Primary\ Key\":\ y ]]; then
-            pk_column="$current_col"         # Store current column as PK
-            pk_index=$index                  # Store its index
+            pk_column="$current_col"
+            pk_index=$col_counter
         fi
     done < "$Metadata_file"
 
-    # If no primary key found → cannot delete safely
+    # If no primary key found
     if [[ -z "$pk_column" ]]; then
         zenity --error \
-            --title="No Primary Key ❌" \
+            --title="No Primary Key" \
             --text="This table has no primary key." \
             --width=450
         return 1
     fi
 
     # ===============================
-    # 4️⃣ Build Zenity table to show all rows
+    # 4. Build Zenity table to show all rows
     # ===============================
     zenity_cmd=(zenity --list
         --title="Delete Record | DB: $CURRENT_DB"
         --text="Select the record to delete:"
         --width=900
         --height=500
+        --print-column="$pk_index"
     )
 
     # Add column headers
@@ -89,36 +107,65 @@ DeleteFromTb() {
         done
     done < "$Table_file"
 
-    # Show Zenity list and get selected row
-    selected_row=$("${zenity_cmd[@]}")
-    [[ -z "$selected_row" ]] && return 0  # Exit if user cancels
+    # Show Zenity list and get PRIMARY KEY VALUE directly
+    pk_value=$("${zenity_cmd[@]}")
+    
+    # Debug: Show what we got
+    # zenity --info --text="DEBUG:\nPK Column: $pk_column\nPK Index: $pk_index\nPK Value: '$pk_value'" --width=400
+    
+    [[ -z "$pk_value" ]] && return 0
 
     # ===============================
-    # 5️⃣ Extract primary key value of selected row
-    # ===============================
-    pk_value=$(echo "$selected_row" | cut -d'|' -f"$pk_index")  # Get PK column value
-
-    # ===============================
-    # 6️⃣ Ask for confirmation before deletion
+    # 5. Ask for confirmation before deletion
     # ===============================
     zenity --question \
-        --title="Confirm Delete ⚠️ | DB: $CURRENT_DB" \
-        --text="Are you sure you want to delete this record?\n\n<b>$pk_column</b>: <b>$(echo "$selected_row" | cut -d'|' -f$pk_index)</b>\n\nThis action <b>cannot be undone</b>!" \
+        --title="Confirm Delete | DB: $CURRENT_DB" \
+        --text="Are you sure you want to delete this record?\n\n$pk_column: $pk_value\n\nThis action cannot be undone!" \
         --width=500
 
-    [[ $? -ne 0 ]] && return 0  # Exit if user cancels
+    [[ $? -ne 0 ]] && return 0
 
     # ===============================
-    # 7️⃣ Delete the record from table
+    # 6. Delete the record - Using AWK with exact field matching
     # ===============================
-    # Keep all rows that do NOT match the primary key value
-    grep -v "^$pk_value|" "$Table_file" > temp && mv temp "$Table_file"
-
-    # ===============================
-    # 8️⃣ Show success message
-    # ===============================
-    zenity --info \
-        --title="Deleted ✅ | DB: $CURRENT_DB" \
-        --text="Record deleted successfully." \
-        --width=400
+    
+    # Count lines before deletion
+    original_lines=$(wc -l < "$Table_file")
+    
+    # Use AWK to filter out the matching row
+    awk -F'|' -v pk_val="$pk_value" -v pk_idx="$pk_index" '
+        BEGIN { OFS = "|" }
+        {
+            # Check if the field at pk_idx matches pk_val
+            if ($pk_idx != pk_val) {
+                print $0
+            }
+        }
+    ' "$Table_file" > "${Table_file}.tmp"
+    
+    # Count lines after deletion
+    new_lines=$(wc -l < "${Table_file}.tmp")
+    
+    # Verify deletion worked
+    if [[ $new_lines -lt $original_lines ]]; then
+        mv "${Table_file}.tmp" "$Table_file"
+        
+        # ===============================
+        # 7. Show success message
+        # ===============================
+        zenity --info \
+            --title="Deleted | DB: $CURRENT_DB" \
+            --text="Record deleted successfully!\n\n$pk_column: $pk_value" \
+            --width=450
+    else
+        # Deletion failed
+        rm -f "${Table_file}.tmp"
+        
+        # Show debug info
+        zenity --error \
+            --title="Delete Failed" \
+            --text="No matching record found.\n\nDEBUG INFO:\nPK Column: $pk_column\nPK Index: $pk_index\nPK Value: '$pk_value'\n\nTable contents:\n$(cat "$Table_file")" \
+            --width=600 --height=400
+        return 1
+    fi
 }
