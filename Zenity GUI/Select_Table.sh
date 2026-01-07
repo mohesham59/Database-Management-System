@@ -1,149 +1,132 @@
 #!/bin/bash
 # ================================================
-# Select_Table_With_Where.sh
-# SELECT * FROM table WHERE column = value
+# Select_Table.sh (FIXED - WHERE condition display)
 # ================================================
 
 SelectTb() {
 
-    # ===============================
-    # 1️⃣ Check if connected to a database
-    # ===============================
-    # CURRENT_DB should contain the name of the connected database
     if [[ -z "$CURRENT_DB" ]]; then
-        zenity --error \
-            --title="Not Connected" \
-            --text="Please connect to a database first." \
-            --width=450
-        return 1  # 1 = error
+        zenity --error --title="Not Connected" --text="Please connect to a database first." --width=450
+        return 1
     fi
 
-    # ===============================
-    # 2️⃣ Check if 'tables/' directory exists and has tables
-    # ===============================
     if [[ ! -d "tables" ]] || [[ -z "$(ls -A tables/ 2>/dev/null)" ]]; then
-        # If no tables exist, show a message
-        zenity --info \
-            --title="No Tables | DB: $CURRENT_DB" \
-            --text="No tables found." \
-            --width=450
-        return 0  # 0 = no error, but nothing to display
+        zenity --info --title="No Tables | DB: $CURRENT_DB" --text="No tables found." --width=450
+        return 0
     fi
 
-    # ===============================
-    # 3️⃣ Prompt user to select a table
-    # ===============================
     TableSelect=$(zenity --list \
         --title="Select Table | DB: $CURRENT_DB" \
         --text="Select table:" \
         --column="Table Name" \
-        --width=600 \
-        --height=450 \
-        $(ls tables/))  # List all files in 'tables/' as options
+        --width=600 --height=450 \
+        $(ls tables/ 2>/dev/null))
 
-    # If the user cancels or selects nothing
     [[ $? -ne 0 || -z "$TableSelect" ]] && return 0
 
-    # Define file paths
-    Table_file="tables/$TableSelect"                   # File containing table data
-    Metadata_file="metadata/${TableSelect}_metadata"  # File containing columns and types
+    Table_file="tables/$TableSelect"
+    Metadata_file="metadata/${TableSelect}_metadata"
 
-    # ===============================
-    # 4️⃣ Check if the table file is empty
-    # ===============================
+    if [[ ! -f "$Table_file" || ! -f "$Metadata_file" ]]; then
+        zenity --error --title="Error" --text="Table or metadata missing." --width=450
+        return 1
+    fi
+
     if [[ ! -s "$Table_file" ]]; then
-        # Table is empty
-        zenity --info \
-            --title="Empty Table | DB: $CURRENT_DB" \
-            --text="No data found in table:\n\n$TableSelect" \
-            --width=450
+        zenity --info --title="Empty Table" --text="Table '$TableSelect' has no data." --width=450
         return 0
     fi
 
-    # ===============================
-    # 5️⃣ Read column names from metadata
-    # ===============================
-    columns=()  # Array to store column names
+    # Read columns
+    columns=()
     while read -r col; do
-        columns+=("$col")  # Add each column name to the array
+        columns+=("$col")
     done < <(awk -F': ' '/"Column Name"/ {print $2}' "$Metadata_file")
-    # awk searches for lines containing "Column Name" and prints the second field after ':'
 
-    # ===============================
-    # 6️⃣ Prompt user for WHERE condition
-    # ===============================
-    WhereColumn=$(zenity --list \
-        --title="WHERE Condition | DB: $CURRENT_DB" \
-        --text="Select column:" \
-        --column="Columns" \
-        "${columns[@]}")  # Show columns as selectable options
+    # Ask user: Show all or with condition?
+    view_mode=$(zenity --list \
+        --title="View Options | $TableSelect" \
+        --text="How do you want to view the data?" \
+        --column="Option" \
+        "Show All Records" \
+        "Search with WHERE condition" \
+        --width=500 --height=300)
 
-    [[ -z "$WhereColumn" ]] && return 0  # Exit if no column is selected
+    [[ -z "$view_mode" ]] && return 0
 
-    # ===============================
-    # 7️⃣ Find the index of the selected column
-    # ===============================
-    col_index=0
-    for i in "${!columns[@]}"; do
-        if [[ "${columns[$i]}" == "$WhereColumn" ]]; then
-            col_index=$i  # Store column index
-            break
-        fi
-    done
+    if [[ "$view_mode" == "Show All Records" ]]; then
+        # FIXED: Build command for showing all records
+        zenity_cmd=(zenity --list \
+            --title="Table: $TableSelect | DB: $CURRENT_DB" \
+            --width=1000 --height=600)
 
-    # ===============================
-    # 8️⃣ Prompt user to enter a value for WHERE condition
-    # ===============================
-    WhereValue=$(zenity --entry \
-        --title="WHERE Condition" \
-        --text="Enter value for:\n$WhereColumn")
+        for col in "${columns[@]}"; do
+            zenity_cmd+=(--column="$col")
+        done
 
-    [[ -z "$WhereValue" ]] && return 0  # Exit if no value is entered
-
-    # ===============================
-    # 9️⃣ Build Zenity table command dynamically
-    # ===============================
-    zenity_cmd=(zenity --list
-        --title="SELECT * FROM $TableSelect WHERE $WhereColumn = $WhereValue"
-        --width=900
-        --height=500
-    )
-
-    # Add column headers to Zenity table
-    for col in "${columns[@]}"; do
-        zenity_cmd+=(--column="$col")
-    done
-
-    # ===============================
-    # 10️⃣ Filter data from table file
-    # ===============================
-    match_found=false  # Flag to track if a matching row is found
-
-    # Read each row of the table, split by '|', store in array 'row'
-    while IFS='|' read -r -a row; do
-        # Check if the value in the selected column matches the input
-        if [[ "${row[$col_index]}" == "$WhereValue" ]]; then
-            match_found=true
-            # Append all cells from this row to Zenity command
+        # Show all rows
+        while IFS='|' read -r -a row; do
             for cell in "${row[@]}"; do
                 zenity_cmd+=("$cell")
             done
-        fi
-    done < "$Table_file"
+        done < "$Table_file"
 
-    # ===============================
-    # 11️⃣ Show message if no matching rows
-    # ===============================
-    if [[ "$match_found" == false ]]; then
-        zenity --info \
-            --title="No Results" \
-            --text="No matching records found." \
-            --width=400
+        "${zenity_cmd[@]}"
         return 0
-    fi
+    else
+        # WHERE condition
+        WhereColumn=$(zenity --list \
+            --title="WHERE Column | $TableSelect" \
+            --text="Select column to filter by:" \
+            --column="Column" \
+            --width=400 --height=350 \
+            "${columns[@]}")
+        
+        [[ -z "$WhereColumn" ]] && return 0
 
-    # ===============================
-    # 12️⃣ Execute Zenity command to display results
-    # ===============================
-    "${zenity_cmd[@]}"
+        # Find column index
+        col_index=0
+        for i in "${!columns[@]}"; do
+            if [[ "${columns[$i]}" == "$WhereColumn" ]]; then
+                col_index=$i
+                break
+            fi
+        done
+
+        WhereValue=$(zenity --entry \
+            --title="WHERE Value | $TableSelect" \
+            --text="Enter value for column '$WhereColumn':")
+        
+        [[ -z "$WhereValue" ]] && return 0
+
+        # FIXED: Build NEW command with WHERE title
+        zenity_cmd=(zenity --list \
+            --title="Table: $TableSelect WHERE $WhereColumn = '$WhereValue' | DB: $CURRENT_DB" \
+            --width=1000 --height=600)
+
+        for col in "${columns[@]}"; do
+            zenity_cmd+=(--column="$col")
+        done
+
+        # Filter and add matching rows
+        match_found=false
+        while IFS='|' read -r -a row; do
+            if [[ "${row[$col_index]}" == "$WhereValue" ]]; then
+                match_found=true
+                for cell in "${row[@]}"; do
+                    zenity_cmd+=("$cell")
+                done
+            fi
+        done < "$Table_file"
+
+        if [[ "$match_found" == false ]]; then
+            zenity --info \
+                --title="No Results | $TableSelect" \
+                --text="No records match the condition:\n\n$WhereColumn = '$WhereValue'" \
+                --width=450
+            return 0
+        fi
+
+        "${zenity_cmd[@]}"
+    fi
 }
