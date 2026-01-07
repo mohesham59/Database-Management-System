@@ -2,8 +2,8 @@
 # Check if PROJECT_ROOT variable is empty or not set
 # If it is empty, calculate the project root directory dynamically
 if [[ -z "$PROJECT_ROOT" ]]; then
-	# ${BASH_SOURCE[0]} = full path to the current script (TableMenu.sh)
-   	# dirname = extracts the directory part
+    # ${BASH_SOURCE[0]} = full path to the current script (TableMenu.sh)
+    # dirname = extracts the directory part
     # cd .. / .. = goes up two levels from the script's location (TableScripts/ → project root)
     # pwd = prints the absolute path of the project root
     PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -12,21 +12,22 @@ fi
 # Define a helper function to safely source library scripts
 # This function checks if the file exists before sourcing it
 source_if_exists() {
-    local file="$1"	# The full path to the script passed as argument
+    local file="$1"    # The full path to the script passed as argument
     if [[ -f "$file" ]]; then
         source "$file"
     else
         echo "Missing: $file"
     fi
-    }
+}
 
 
 source_if_exists "$PROJECT_ROOT/TableScripts/lib/CreateTable.sh"
 source_if_exists "$PROJECT_ROOT/TableScripts/lib/InsertIntoTable.sh"
 source_if_exists "$PROJECT_ROOT/TableScripts/lib/ListTable.sh"
 source_if_exists "$PROJECT_ROOT/TableScripts/lib/SelectFromTable.sh"  
-source_if_exists "$PROJECT_ROOT/TableScripts/lib/DeleteFromTable.sh" 
-source_if_exists "$PROJECT_ROOT/TableScripts/lib/UpadateTable.sh"      
+source_if_exists "$PROJECT_ROOT/TableScripts/lib/DeleteFromTable.sh"
+# FIXED: Corrected typo from "UpadateTable" to "UpdateTable"
+source_if_exists "$PROJECT_ROOT/TableScripts/lib/UpdateTable.sh"
  
 
 if [[ ! -f "$PROJECT_ROOT/TableScripts/lib/CreateTable.sh" ]]; then
@@ -39,21 +40,21 @@ fi
 # ========================================
 while true; do
 clear
-echo -e "\033[0;36m╔════════════════════════════════════════════════════════════════╗\033[0m"
-echo -e "\033[0;36m║                                                                ║\033[0m"
-echo -e "\033[0;36m║\033[1;33m  ████████╗ █████╗ ██████╗ ██╗     ███████╗███╗   ███╗███████╗  \033[0;36m║\033[0m"
-echo -e "\033[0;36m║\033[1;33m  ╚══██╔══╝██╔══██╗██╔══██╗██║     ██╔════╝████╗ ████║██╔════╝  \033[0;36m║\033[0m"
-echo -e "\033[0;36m║\033[1;33m     ██║   ███████║██████╔╝██║     █████╗  ██╔████╔██║█████╗    \033[0;36m║\033[0m"
-echo -e "\033[0;36m║\033[1;33m     ██║   ██╔══██║██╔══██╗██║     ██╔══╝  ██║╚██╔╝██║██╔══╝    \033[0;36m║\033[0m"
-echo -e "\033[0;36m║\033[1;33m     ██║   ██║  ██║██████╔╝███████╗███████╗██║ ╚═╝ ██║███████╗  \033[0;36m║\033[0m"
-echo -e "\033[0;36m║\033[1;33m     ╚═╝   ╚═╝  ╚═╝╚═════╝ ╚══════╝╚══════╝╚═╝     ╚═╝╚══════╝  \033[0;36m║\033[0m"
-echo -e "\033[0;36m║                                                                ║\033[0m"
-echo -e "\033[0;36m╚════════════════════════════════════════════════════════════════╝\033[0m"
+echo -e "\033[0;36m╔══════════════════════════════════════════════════════════════╗\033[0m"
+echo -e "\033[0;36m║                                                              ║\033[0m"
+echo -e "\033[0;36m║\033[1;33m  ████████╗ █████╗ ██████╗ ██╗     ███████╗███╗   ███╗███████╗      \033[0;36m║\033[0m"
+echo -e "\033[0;36m║\033[1;33m  ╚══██╔══╝██╔══██╗██╔══██╗██║     ██╔════╝████╗ ████║██╔════╝      \033[0;36m║\033[0m"
+echo -e "\033[0;36m║\033[1;33m     ██║   ███████║██████╔╝██║     █████╗  ██╔████╔██║███████╗      \033[0;36m║\033[0m"
+echo -e "\033[0;36m║\033[1;33m     ██║   ██╔══██║██╔══██╗██║     ██╔══╝  ██║╚██╔╝██║╚════██║      \033[0;36m║\033[0m"
+echo -e "\033[0;36m║\033[1;33m     ██║   ██║  ██║██████╔╝███████╗███████╗██║ ╚═╝ ██║███████╗      \033[0;36m║\033[0m"
+echo -e "\033[0;36m║\033[1;33m     ╚═╝   ╚═╝  ╚═╝╚═════╝ ╚══════╝╚══════╝╚═╝     ╚═╝╚══════╝      \033[0;36m║\033[0m"
+echo -e "\033[0;36m║                                                              ║\033[0m"
+echo -e "\033[0;36m╚══════════════════════════════════════════════════════════════╝\033[0m"
 echo
 
 echo -e "\033[1;32m                Table Management Menu\033[0m"
 echo -e "\033[1;35m                Current Database: $(basename "$(pwd)")\033[0m"
-echo -e "\033[0;34m════════════════════════════════════════════════════════════════\033[0m"
+echo -e "\033[0;34m══════════════════════════════════════════════════════════════\033[0m"
 echo "1) Create Table"
 echo "2) List Tables"
 echo "3) Drop Table"
@@ -62,7 +63,7 @@ echo "5) Select From Table"
 echo "6) Delete From Table"
 echo "7) Update Table"
 echo "8) Exit to Database Menu"
-echo -e "\033[0;34m════════════════════════════════════════════════════════════════\033[0m"
+echo -e "\033[0;34m══════════════════════════════════════════════════════════════\033[0m"
 echo
 
 #-------------------------------------
@@ -71,7 +72,7 @@ echo
 
     read -p $'\033[1;33mPlease enter your choice (1-8): \033[0m' choice
 
-    echo -e "\033[0;34m════════════════════════════════════════════════════════════════\033[0m"
+    echo -e "\033[0;34m══════════════════════════════════════════════════════════════\033[0m"
 
     case "$choice" in
         1)
@@ -117,6 +118,6 @@ echo
     esac
 
     echo
-    echo -e "\033[0;34m════════════════════════════════════════════════════════════════\033[0m"
+    echo -e "\033[0;34m══════════════════════════════════════════════════════════════\033[0m"
     echo
 done
