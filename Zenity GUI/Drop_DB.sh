@@ -1,4 +1,7 @@
 #!/bin/bash
+# ================================================
+# Drop_DB.sh (FIXED)
+# ================================================
 
 # Function to drop (delete) an existing database
 Drop_func() {
@@ -31,23 +34,23 @@ Drop_func() {
     # Confirmation dialog before deletion
     if zenity --question \
         --title="Confirm Deletion" \
-        --text="Are you <b>SURE</b> you want to delete the database:\n\n<b>$D_name</b>\n\nThis action <b>cannot be undone</b>!" \
+        --text="Are you SURE you want to delete the database:\n\n$D_name\n\nThis action cannot be undone!" \
         --width=500 \
         --height=200; then
         
         # Perform deletion
         rm -rf "$Db_path"
         
-        # Success message (replaces the one in main menu)
+        # Success message
         zenity --warning \
             --title="Database Dropped" \
-            --text="Database '<b>$D_name</b>' has been permanently deleted." \
+            --text="Database '$D_name' has been permanently deleted." \
             --width=450
     else
         # User clicked No or Cancel
         zenity --info \
             --title="Cancelled" \
-            --text="Deletion of '<b>$D_name</b>' was cancelled.\nNo changes made." \
+            --text="Deletion of '$D_name' was cancelled.\nNo changes made." \
             --width=450
     fi
 
